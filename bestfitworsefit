@@ -1,0 +1,138 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+struct MemoryBlock {
+    int id;
+    int size;
+    bool allocated;
+};
+
+// Function to display memory status
+void displayMemory(const std::vector<MemoryBlock>& memory) {
+    std::cout << "Memory Status:\n";
+    for (const MemoryBlock& block : memory) {
+        std::cout << "Block " << block.id << " - Size: " << block.size;
+        if (block.allocated) {
+            std::cout << " (Allocated)";
+        } else {
+            std::cout << " (Free)";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+// Function to perform first-fit allocation
+void firstFit(std::vector<MemoryBlock>& memory, int blockSize) {
+    int processSize;
+    std::cout << "Enter the size of the process: ";
+    std::cin >> processSize;
+
+    for (MemoryBlock& block : memory) {
+        if (!block.allocated && block.size >= processSize) {
+            block.allocated = true;
+            std::cout << "Memory allocated using First-Fit strategy.\n";
+            displayMemory(memory);
+            return;
+        }
+    }
+
+    std::cout << "Memory allocation failed. No suitable block found.\n";
+    displayMemory(memory);
+}
+
+// Function to perform best-fit allocation
+void bestFit(std::vector<MemoryBlock>& memory, int blockSize) {
+    int processSize;
+    std::cout << "Enter the size of the process: ";
+    std::cin >> processSize;
+
+    // Find the best-fit block
+    auto bestFitBlock = std::find_if(memory.begin(), memory.end(), [processSize](const MemoryBlock& block) {
+        return !block.allocated && block.size >= processSize;
+    });
+
+    if (bestFitBlock != memory.end()) {
+        bestFitBlock->allocated = true;
+        std::cout << "Memory allocated using Best-Fit strategy.\n";
+    } else {
+        std::cout << "Memory allocation failed. No suitable block found.\n";
+    }
+
+    displayMemory(memory);
+}
+
+// Function to perform worst-fit allocation
+void worstFit(std::vector<MemoryBlock>& memory, int blockSize) {
+    int processSize;
+    std::cout << "Enter the size of the process: ";
+    std::cin >> processSize;
+
+    // Find the worst-fit block (largest free block)
+    auto worstFitBlock = std::max_element(memory.begin(), memory.end(), [](const MemoryBlock& block1, const MemoryBlock& block2) {
+        return !block1.allocated && block1.size < block2.size;
+    });
+
+    if (worstFitBlock != memory.end() && worstFitBlock->size >= processSize) {
+        worstFitBlock->allocated = true;
+        std::cout << "Memory allocated using Worst-Fit strategy.\n";
+    } else {
+        std::cout << "Memory allocation failed. No suitable block found.\n";
+    }
+
+    displayMemory(memory);
+}
+
+int main() {
+    int blockSize;
+    std::cout << "Enter the size of the memory block: ";
+    std::cin >> blockSize;
+
+    // Initialize memory blocks
+    std::vector<MemoryBlock> memory;
+    int blockId = 1;
+    while (true) {
+        MemoryBlock block;
+        block.id = blockId++;
+        block.size = blockSize;
+        block.allocated = false;
+        memory.push_back(block);
+
+        std::cout << "Do you want to add another memory block? (y/n): ";
+        char choice;
+        std::cin >> choice;
+        if (choice != 'y' && choice != 'Y') {
+            break;
+        }
+    }
+
+    while (true) {
+        int strategy;
+        std::cout << "Select memory allocation strategy:\n"
+                  << "1. First-Fit\n"
+                  << "2. Best-Fit\n"
+                  << "3. Worst-Fit\n"
+                  << "4. Exit\n"
+                  << "Enter your choice: ";
+        std::cin >> strategy;
+
+        switch (strategy) {
+            case 1:
+                firstFit(memory, blockSize);
+                break;
+            case 2:
+                bestFit(memory, blockSize);
+                break;
+            case 3:
+                worstFit(memory, blockSize);
+                break;
+            case 4:
+                return 0;
+            default:
+                std::cout << "Invalid choice. Please try again.\n";
+        }
+    }
+
+    return 0;
+}
